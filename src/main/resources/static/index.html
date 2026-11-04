@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba de conexión</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 2rem; }
+    input, button { padding: .5rem; font-size: 1rem; }
+    #msg { padding: .5rem; border-radius: 4px; }
+    .ok { background: #d9f2dd; } .error { background: #f8d7da; }
+  </style>
+</head>
+<body>
+  <h1>Prueba de conexión</h1>
+  <p id="msg" hidden></p>
+
+  <h2>Registrarse</h2>
+  <form method="post" action="/register">
+    <input name="username" placeholder="Usuario" required minlength="3" maxlength="30">
+    <input name="email" type="email" placeholder="Correo" required>
+    <input name="password" type="password" placeholder="Contraseña (mínimo 10, con letra y número)" required minlength="10">
+    <button type="submit">Registrarme</button>
+  </form>
+
+  <h2>Iniciar sesión</h2>
+  <form method="post" action="/login">
+    <input name="email" type="email" placeholder="Correo" required>
+    <input name="password" type="password" placeholder="Contraseña" required>
+    <button type="submit">Entrar</button>
+  </form>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const msg = document.getElementById('msg');
+    const texts = {
+      registrado: ['ok', 'Usuario registrado. Ya puedes iniciar sesión.'],
+      registro400: ['error', 'Datos inválidos: revisa el usuario, el correo y que la contraseña tenga mínimo 10 caracteres con letra y número.'],
+      registro409: ['error', 'El usuario o el correo ya están en uso.'],
+      registro429: ['error', 'Demasiados intentos. Espera un minuto.'],
+      login400: ['error', 'Datos inválidos.'],
+      login401: ['error', 'Correo o contraseña incorrectos.'],
+      login429: ['error', 'Demasiados intentos fallidos. Intenta más tarde.'],
+      sinconexion: ['error', 'No se pudo conectar con el backend. ¿Está encendido?']
+    };
+    const key = params.get('ok') || params.get('error');
+    if (key) {
+      const [type, text] = texts[key] || ['error', 'Ocurrió un error (' + key + ').'];
+      msg.className = type;
+      msg.textContent = text;
+      msg.hidden = false;
+    }
+  </script>
+</body>
+</html>
