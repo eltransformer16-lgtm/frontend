@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://127.0.0.1:8080/api
+    restart: unless-stopped
+    ports:
+      - "5173:80"
