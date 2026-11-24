@@ -61,8 +61,12 @@ const LoginPage: React.FC = () => {
 
       const data = (await res.json()) as AuthSession;
       saveSession(data);
-    } catch {
-      setErrorMsg('No se pudo conectar con el servidor.');
+    } catch (err) {
+      setErrorMsg(
+        err instanceof TypeError
+          ? 'No se pudo conectar con el servidor.'
+          : 'Ocurrió un error inesperado. Intenta de nuevo.',
+      );
     } finally {
       setLoading(false);
     }
@@ -107,8 +111,12 @@ const LoginPage: React.FC = () => {
       setPassword('');
       setPasswordConfirm('');
       setMode('login');
-    } catch {
-      setErrorMsg('No se pudo conectar con el servidor.');
+    } catch (err) {
+      setErrorMsg(
+        err instanceof TypeError
+          ? 'No se pudo conectar con el servidor.'
+          : 'Ocurrió un error inesperado. Intenta de nuevo.',
+      );
     } finally {
       setLoading(false);
     }

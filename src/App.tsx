@@ -11,7 +11,7 @@ import {
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { folderOutline, peopleOutline, personCircleOutline } from 'ionicons/icons';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Redirect, Route } from 'react-router-dom';
 
 import LoginPage from './pages/LoginPage';
 import StoragePage from './pages/StoragePage';
@@ -62,12 +62,19 @@ const App: React.FC = () => {
       <IonReactRouter>
         <IonTabs>
           <IonRouterOutlet>
-            <Routes>
-              <Route path="/storage" element={<StoragePage />} />
-              {isAdmin && <Route path="/admin/users" element={<AdminUsersPage />} />}
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="*" element={<Navigate to="/storage" replace />} />
-            </Routes>
+            <Route exact path="/storage" component={StoragePage} />
+            <Route
+              exact
+              path="/admin/users"
+              render={() => (isAdmin ? <AdminUsersPage /> : <Redirect to="/storage" />)}
+            />
+            <Route exact path="/profile" component={ProfilePage} />
+            <Route exact path="/">
+              <Redirect to="/storage" />
+            </Route>
+            <Route>
+              <Redirect to="/storage" />
+            </Route>
           </IonRouterOutlet>
 
           <IonTabBar slot="bottom">
