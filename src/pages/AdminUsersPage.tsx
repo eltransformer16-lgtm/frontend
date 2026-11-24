@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   IonBadge,
   IonButton,
@@ -39,6 +39,21 @@ const AdminUsersPage: React.FC = () => {
   const [filterRole, setFilterRole] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
+  // Valores con debounce para no lanzar una petición por cada tecla
+  const [debUsername, setDebUsername] = useState('');
+  const [debEmail, setDebEmail] = useState('');
+  const requestId = useRef(0);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebUsername(filterUsername), 350);
+    return () => clearTimeout(t);
+  }, [filterUsername]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebEmail(filterEmail), 350);
+    return () => clearTimeout(t);
+  }, [filterEmail]);
+
   const [feedback, setFeedback] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -66,20 +81,27 @@ const AdminUsersPage: React.FC = () => {
       page: String(page),
       pageSize: String(pageSize),
     });
-    if (filterUsername.trim()) params.set('username', filterUsername.trim());
-    if (filterEmail.trim()) params.set('email', filterEmail.trim());
+    if (debUsername.trim()) params.set('username', debUsername.trim());
+    if (debEmail.trim()) params.set('email', debEmail.trim());
     if (filterRole) params.set('role', filterRole);
     if (filterStatus) params.set('isActive', filterStatus);
 
-    const res = await apiFetch(`/users?${params.toString()}`);
-    if (!res.ok) {
-      setErrorMsg(await parseError(res));
-      return;
+    const myId = ++requestId.current;
+    try {
+      const res = await apiFetch(`/users?${params.toString()}`);
+      if (myId !== requestId.current) return; // llegó una respuesta más nueva
+      if (!res.ok) {
+        setErrorMsg(await parseError(res));
+        return;
+      }
+      const data = await res.json();
+      if (myId !== requestId.current) return;
+      setUsers(data.items || []);
+      setTotal(data.total || 0);
+    } catch {
+      if (myId === requestId.current) setErrorMsg('No se pudo conectar con el servidor.');
     }
-    const data = await res.json();
-    setUsers(data.items || []);
-    setTotal(data.total || 0);
-  }, [page, filterUsername, filterEmail, filterRole, filterStatus]);
+  }, [page, debUsername, debEmail, filterRole, filterStatus]);
 
   useEffect(() => {
     loadUsers();
